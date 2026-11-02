@@ -1,8 +1,9 @@
-# XPLRCLOSE
-a minecraft plugin that will alert you via ui that a player is in your close distance. This plugin could be banned on some servers so ask the staff first if you are alowed to use it (:
+# xplrclose
 
-### A bit about this project
-This is my first java project as well as my minecraft plugin which is coded without AI. It was made during a terra event organised by hackclub
+## Setup
 
-### Notice for reviewers
-Comments are for my better understanding and not ai code (:
+For setup instructions, please see the [Fabric Documentation page](https://docs.fabricmc.net/develop/getting-started/creating-a-project#setting-up) related to the IDE that you are using.
+
+## License
+
+This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
