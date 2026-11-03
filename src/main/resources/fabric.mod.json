@@ -3,7 +3,7 @@
 	"id": "xplrclose",
 	"version": "${version}",
 	"name": "xplrclose",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "This client side mod alert you when player/s are nearby.",
 	"authors": [
 		"Me!"
 	],
@@ -13,7 +13,7 @@
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/xplrclose/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
 		"main": [
 			"majcek210.xplrclose.Xplrclose"
