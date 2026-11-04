@@ -4,6 +4,8 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.api.ModInitializer;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+
 import net.minecraft.resources.Identifier;
 
 import org.slf4j.Logger;
@@ -21,6 +23,16 @@ public class XplrcloseClient implements ClientModInitializer {
 
 	int CHECK_PER = 20;
 
+
+	private void detectPlayers(ClientLevel level) {
+		if (level == null) return;
+
+		for (var player: level.players()) {
+			LOGGER.info("Player" + player.getName().getString());
+		};
+
+	};
+
 	@Override
 	public void onInitializeClient() {
 		LOGGER.info("xplrclose | made by @majcek210");
@@ -33,10 +45,11 @@ public class XplrcloseClient implements ClientModInitializer {
 			if (tick >= CHECK_PER) {
 				if (active) return;
 				active = true;
+				detectPlayers(client.level);
 				LOGGER.info("something should fire here");
 				active = false;
 				tick = 0;
-			}
+			};
 		});
 	}
 }
