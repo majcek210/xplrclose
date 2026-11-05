@@ -27,6 +27,8 @@ public class XplrcloseClient implements ClientModInitializer {
 	private boolean active = false;
 
 	int CHECK_PER = 20;
+	int RADIUS = 20;
+
 
 	final Minecraft client = Minecraft.getInstance();
 
@@ -36,9 +38,6 @@ public class XplrcloseClient implements ClientModInitializer {
 
 		if (level == null) return players;
 
-
-
-		players.clear();
 
 
 		for (var player: level.players()) {
@@ -54,6 +53,28 @@ public class XplrcloseClient implements ClientModInitializer {
 		return players;
 
 	}
+
+	private List<Player> filterOnlyClose(List<Player> List) {
+
+		final List<Player> filteredPlayers = new ArrayList<>();
+
+		for (var player: List) {
+			if (player == null || client.player == null) {
+				continue;
+			}
+
+			var playerPosition = player.position();
+			var clientPosition = client.player.position();
+
+			boolean isClose = playerPosition.subtract(clientPosition).horizontalDistance() < RADIUS;
+
+			if (isClose) {
+				filteredPlayers.add(player);
+			};
+
+		}
+		return filteredPlayers;
+	}
 	@Override
 	public void onInitializeClient() {
 		LOGGER.info("xplrclose | made by @majcek210");
@@ -66,8 +87,13 @@ public class XplrcloseClient implements ClientModInitializer {
 			if (tick >= CHECK_PER) {
 				if (active) return;
 				active = true;
-				final List<Player> players= detectPlayers(client.level);
-				LOGGER.info(players.toString());
+				final List<Player> players = detectPlayers(client.level);
+				final List<Player> filtered = filterOnlyClose(players);
+
+				LOGGER.info("----------");
+				LOGGER.info(filtered.toString());
+				LOGGER.info("----------");
+
 				active = false;
 				tick = 0;
 			}
