@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 
 import net.minecraft.world.entity.player.Player;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+
 
 
 
@@ -48,15 +51,16 @@ public class XplrcloseClient implements ClientModInitializer {
 				continue;
 			}
 			players.add(player);
-			LOGGER.info("Player" + player.getName().getString());
 		}
 		return players;
 
 	}
 
-	private List<Player> filterOnlyClose(List<Player> List) {
+	private record NearbyPlayer(Player player, double distance) {}
 
-		final List<Player> filteredPlayers = new ArrayList<>();
+	private List<NearbyPlayer> filterOnlyClose(List<Player> List) {
+
+		final List<NearbyPlayer> filteredPlayers = new ArrayList<>();
 
 		for (var player: List) {
 			if (player == null || client.player == null) {
@@ -66,10 +70,11 @@ public class XplrcloseClient implements ClientModInitializer {
 			var playerPosition = player.position();
 			var clientPosition = client.player.position();
 
-			boolean isClose = playerPosition.subtract(clientPosition).horizontalDistance() < RADIUS;
+			double difference = playerPosition.subtract(clientPosition).horizontalDistance();
+			boolean isClose = difference < RADIUS;
 
 			if (isClose) {
-				filteredPlayers.add(player);
+				filteredPlayers.add(new NearbyPlayer(player, difference));
 			};
 
 		}
@@ -88,15 +93,24 @@ public class XplrcloseClient implements ClientModInitializer {
 				if (active) return;
 				active = true;
 				final List<Player> players = detectPlayers(client.level);
-				final List<Player> filtered = filterOnlyClose(players);
+				final List<NearbyPlayer> filtered = filterOnlyClose(players);
 
-				LOGGER.info("----------");
-				LOGGER.info(filtered.toString());
-				LOGGER.info("----------");
+				StringBuilder names = new StringBuilder();
+				for (var playerObject: filtered) {
+					triggerAlert(playerObject.player.getPlainTextName(), playerObject.distance);
+				}
+
 
 				active = false;
 				tick = 0;
 			}
 		});
+	}
+
+	private void triggerAlert(String playerName, double radius) {
+		if (client.gui == null) return;
+		Component message = Component.literal("Player " + playerName + " is in " + Math.round(radius)+ " blocks radius");
+
+		client.gui.hud.setOverlayMessage(message, false);
 	}
 }
