@@ -6,7 +6,7 @@ import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
-
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.Minecraft;
 
@@ -16,18 +16,18 @@ import org.slf4j.LoggerFactory;
 import net.minecraft.world.entity.player.Player;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
-
-
-
 
 
 public class XplrcloseClient implements ClientModInitializer {
 	public static final String MOD_ID = "xplrclose";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+
+
+
 	private int tick = 0;
 	private boolean active = false;
+	private final EspHandler espRenderer = new EspHandler();
 
 	int CHECK_PER = 20;
 	int RADIUS = 20;
@@ -84,8 +84,11 @@ public class XplrcloseClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		LOGGER.info("xplrclose | made by @majcek210");
 
+		EspHandler.register();
+
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.player == null || client.level == null) {
+				EspHandler.targetList.clear();
 				return;
 			}
 			tick += 1;
@@ -95,14 +98,23 @@ public class XplrcloseClient implements ClientModInitializer {
 				final List<Player> players = detectPlayers(client.level);
 				final List<NearbyPlayer> filtered = filterOnlyClose(players);
 
+				EspHandler.targetList.clear();
 				StringBuilder names = new StringBuilder();
 				for (var playerObject: filtered) {
 					triggerAlert(playerObject.player.getPlainTextName(), playerObject.distance);
+					EspHandler.targetList.add(playerObject.player);
 				}
 
 
 				active = false;
 				tick = 0;
+			}
+		});
+
+		LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
+			Player plr = this.client.player;
+			if (plr != null) {
+
 			}
 		});
 	}
