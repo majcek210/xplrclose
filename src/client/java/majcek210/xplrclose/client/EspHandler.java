@@ -6,6 +6,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
@@ -23,6 +25,7 @@ public class EspHandler {
             RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                     .withLocation(Identifier.fromNamespaceAndPath("xplrclose", "pipeline/esp"))
                     .withDepthStencilState(Optional.empty())
+                    .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
                     .build()
             );
 
@@ -50,7 +53,7 @@ public class EspHandler {
         Vec3 cam = cntx.levelState().cameraRenderState.pos;
         PoseStack stack = cntx.poseStack();
         stack.pushPose();
-        stack.translate(-cam.x, -cam.x,-cam.z);
+        stack.translate(-cam.x, -cam.y,-cam.z);
 
         cntx.submitNodeCollector().submitCustomGeometry(stack, ESP_TYPE, (pose, consumer) -> {
             box(consumer, pose,
