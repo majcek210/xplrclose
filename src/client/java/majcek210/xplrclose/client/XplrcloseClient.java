@@ -26,7 +26,6 @@ public class XplrcloseClient implements ClientModInitializer {
 
 
 	private int tick = 0;
-	private boolean active = false;
 	private final EspHandler espRenderer = new EspHandler();
 
 	int CHECK_PER = 20;
@@ -93,8 +92,6 @@ public class XplrcloseClient implements ClientModInitializer {
 			}
 			tick += 1;
 			if (tick >= CHECK_PER) {
-				if (active) return;
-				active = true;
 				final List<Player> players = detectPlayers(client.level);
 				final List<NearbyPlayer> filtered = filterOnlyClose(players);
 
@@ -104,17 +101,7 @@ public class XplrcloseClient implements ClientModInitializer {
 					triggerAlert(playerObject.player.getPlainTextName(), playerObject.distance);
 					EspHandler.targetList.add(playerObject.player);
 				}
-
-
-				active = false;
 				tick = 0;
-			}
-		});
-
-		LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
-			Player plr = this.client.player;
-			if (plr != null) {
-
 			}
 		});
 	}
