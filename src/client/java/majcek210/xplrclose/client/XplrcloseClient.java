@@ -10,6 +10,10 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.Minecraft;
 
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,22 +21,40 @@ import net.minecraft.world.entity.player.Player;
 
 import net.minecraft.network.chat.Component;
 
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+
+import net.minecraft.sounds.SoundSource;
+
+
+
 
 public class XplrcloseClient implements ClientModInitializer {
 	public static final String MOD_ID = "xplrclose";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 
-
+	static final Identifier PLAYER_NEARBY_SOUND = Identifier.fromNamespaceAndPath("xplrclose", "player_nearby_ping");
+	static final SoundEvent PLAYER_NEARBY_SOUND_EVENT = SoundEvent.createVariableRangeEvent(PLAYER_NEARBY_SOUND);
 
 	private int tick = 0;
-	private final EspHandler espRenderer = new EspHandler();
 
 	int CHECK_PER = 20;
 	int RADIUS = 20;
 
 
 	final Minecraft client = Minecraft.getInstance();
+
+	private void playNearbySound() {
+		if (client.player == null) return;
+
+		client.player.playSound(
+				PLAYER_NEARBY_SOUND_EVENT,
+                1.0f,
+				1.0f
+		);
+	}
 
 	private List<Player> detectPlayers(ClientLevel level) {
 
@@ -85,6 +107,12 @@ public class XplrcloseClient implements ClientModInitializer {
 
 		EspHandler.register();
 
+		Registry.register(
+				BuiltInRegistries.SOUND_EVENT,
+				PLAYER_NEARBY_SOUND,
+				PLAYER_NEARBY_SOUND_EVENT
+		);
+
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.player == null || client.level == null) {
 				EspHandler.targetList.clear();
@@ -97,19 +125,37 @@ public class XplrcloseClient implements ClientModInitializer {
 
 				EspHandler.targetList.clear();
 				StringBuilder names = new StringBuilder();
+
+				var message = "Many players found nearby!";
+				var closestRadius = 20.00;
+
 				for (var playerObject: filtered) {
-					triggerAlert(playerObject.player.getPlainTextName(), playerObject.distance);
+
 					EspHandler.targetList.add(playerObject.player);
+					if (filtered.size() == 1) {
+						message = playerObject.player.getPlainTextName() + " is nearby in " + Math.round(playerObject.distance) + " block radius.";
+						break;
+					}
+					if (playerObject.distance < closestRadius) {
+						closestRadius = playerObject.distance;
+					}
+				}
+				if (filtered.size() > 1) {
+					message = "Multiple players nearby! Closest one is in " + Math.round(closestRadius) + " block radius.";
+				}
+				if (!filtered.isEmpty()) {
+					triggerAlert(message);
 				}
 				tick = 0;
 			}
 		});
 	}
 
-	private void triggerAlert(String playerName, double radius) {
+	private void triggerAlert(String msgContent) {
 		if (client.gui == null) return;
-		Component message = Component.literal("Player " + playerName + " is in " + Math.round(radius)+ " blocks radius");
+		Component message = Component.literal(msgContent);
 
+		playNearbySound();
 		client.gui.hud.setOverlayMessage(message, false);
 	}
 }

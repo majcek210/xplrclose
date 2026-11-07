@@ -85,6 +85,7 @@ public class EspHandler {
         line(v, p, x0, y1, z0, x0, y1, z1, r, g, b, a);
         line(v, p, x1, y1, z0, x1, y1, z1, r, g, b, a);
     }
+
     private static void line(VertexConsumer v, PoseStack.Pose p,
                              float x0, float y0, float z0, float x1, float y1, float z1,
                              float r, float g, float b, float a) {

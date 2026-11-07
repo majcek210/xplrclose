@@ -1,0 +1,7 @@
+{
+  "player_nearby_ping" : {
+    "sounds": [
+      "xplrclose:player_nearby_ping"
+    ]
+  }
+}
