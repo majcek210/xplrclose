@@ -8,16 +8,12 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
-import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 import org.slf4j.Logger;
@@ -25,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import majcek210.xplrclose.client.config.XplrcloseConfig;
 import majcek210.xplrclose.client.notifications.NotificationManager;
+import majcek210.xplrclose.client.commands.CommandHandler;
 
 
 
@@ -93,9 +90,11 @@ public class XplrcloseClient implements ClientModInitializer {
 			double difference = playerPosition.subtract(clientPosition).horizontalDistance();
 			boolean isClose = difference < RADIUS;
 
-			if (isClose) {
+			boolean isIgnored = XplrcloseConfig.isIgnored(player.getUUID());
+
+			if (isClose && !isIgnored) {
 				filteredPlayers.add(new NearbyPlayer(player, difference));
-			};
+			}
 
 		}
 		return filteredPlayers;
@@ -115,8 +114,6 @@ public class XplrcloseClient implements ClientModInitializer {
 				PLAYER_NEARBY_SOUND_EVENT
 		);
 
-		int CHECK_PER = XplrcloseConfig.checkInterval();
-		int RADIUS = XplrcloseConfig.detectionRadius();
 
 		HudElementRegistry.attachElementBefore(
 				VanillaHudElements.CHAT,
@@ -124,12 +121,10 @@ public class XplrcloseClient implements ClientModInitializer {
 				XplrcloseHUD::extract
 		);
 
+		CommandHandler.register();
 
-		ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
-			if (!(screen instanceof ChatScreen)) return;
-			ScreenMouseEvents.allowMouseClick(screen).register((s, event) ->
-				!XplrcloseHUD.handleOnClick(event));
-		});
+
+
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.player == null || client.level == null) {
@@ -141,8 +136,13 @@ public class XplrcloseClient implements ClientModInitializer {
 
 			NotificationManager.tick();
 
+			int CHECK_PER = XplrcloseConfig.checkInterval();
+
+
 			tick += 1;
 			if (tick >= CHECK_PER) {
+				int RADIUS = XplrcloseConfig.detectionRadius();
+
 				final List<Player> players = detectPlayers(client.level);
 				final List<NearbyPlayer> filtered = filterOnlyClose(players, RADIUS);
 
@@ -167,13 +167,5 @@ public class XplrcloseClient implements ClientModInitializer {
 				tick = 0;
 			}
 		});
-	}
-
-	private void triggerAlert(String msgContent) {
-		if (client.gui == null) return;
-		Component message = Component.literal(msgContent);
-
-
-		client.gui.hud.setOverlayMessage(message, false);
 	}
 }

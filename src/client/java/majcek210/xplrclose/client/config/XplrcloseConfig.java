@@ -19,13 +19,21 @@ public class XplrcloseConfig {
 
     private static final Properties properties = new Properties();
 
-    private static final Set<UUID> ignoredPlayers = new HashSet<>();
+    private static final Map<UUID, String> ignoredPlayers = new LinkedHashMap<>();
 
-    private static int detectionRadius = 20;
+    private static int detectionRadius = 40;
     private static int checkTickInterval = 20;
     private static int notificationDuration = 5;
 
     private static boolean soundEnabled = true;
+
+    private static int safeInt(String key, int def) {
+        try {
+            return Integer.parseInt(properties.getProperty(key, String.valueOf(def)).trim());
+        } catch(NumberFormatException e) {
+            return def;
+        }
+    }
 
     public static void load() {
         if (!Files.exists(CONFIG_PATH)) {
@@ -39,21 +47,20 @@ public class XplrcloseConfig {
 
             soundEnabled = Boolean.parseBoolean(properties.getProperty("sound", "true"));
 
-            detectionRadius = Integer.parseInt(properties.getProperty("radius", "20"));
-            checkTickInterval = Integer.parseInt(properties.getProperty("checkInterval", "20"));
-            notificationDuration = Integer.parseInt(properties.getProperty("notificationDuration", "5"));
+            detectionRadius = safeInt("radius", 40);
+            checkTickInterval = safeInt("checkInterval", 20);
+            notificationDuration = safeInt("notificationDuration", 5);
 
             ignoredPlayers.clear();
-            int count = Integer.parseInt(properties.getProperty("ignored.count", "0"));
+            int count = safeInt("ignored.count", 0);
 
             for (int i = 0; i < count; i++) {
-                String uuid = properties.getProperty("ignored." + i);
-
-                if (uuid != null) {
-                    try {
-                        ignoredPlayers.add(UUID.fromString(uuid));
-                    } catch (IllegalArgumentException ignored) {}
-                }
+                String id = properties.getProperty("ignored." + i);
+                if (id == null) continue;
+                try {
+                    UUID uuid = UUID.fromString(id);
+                    ignoredPlayers.put(uuid, properties.getProperty("ignored." + i + ".name", id));
+                } catch (IllegalArgumentException ignored) {}
             }
 
         } catch (IOException | NumberFormatException e) {
@@ -73,10 +80,11 @@ public class XplrcloseConfig {
         properties.setProperty("ignored.count",
                 String.valueOf(ignoredPlayers.size()));
 
-        int index = 0;
-
-        for (UUID uuid: ignoredPlayers) {
-            properties.setProperty("ignored." + index++, uuid.toString());
+        int i = 0;
+        for (var e : ignoredPlayers.entrySet()) {
+            properties.setProperty("ignored." + i, e.getKey().toString());
+            properties.setProperty("ignored." + i + ".name", e.getValue());
+            i++;
         }
 
         try {
@@ -129,22 +137,35 @@ public class XplrcloseConfig {
         save();
     }
 
-    public static void ignorePlayer(UUID uuid) {
-       ignoredPlayers.add(uuid);
+    public static void ignorePlayer(UUID uuid, String name) {
+       ignoredPlayers.put(uuid, name);
 
        save();
     }
 
     public static boolean isIgnored(UUID uuid) {
-        return ignoredPlayers.contains(uuid);
+        return ignoredPlayers.containsKey(uuid);
     }
 
-    public static void uningnorePlayer(UUID uuid) {
+
+    // currently is not used yet
+    public static void unignorePlayer(UUID uuid) {
         ignoredPlayers.remove(uuid);
         save();
     }
 
-    public static Set<UUID> getIgnoredPlayers() {
-        return Collections.unmodifiableSet(ignoredPlayers);
+    public static Map<UUID, String> getIgnoredPlayers() {
+        return Collections.unmodifiableMap(ignoredPlayers);
+    }
+
+    public static String uningnorePlayerByName(String name) {
+        for (var e : ignoredPlayers.entrySet()) {
+            if (e.getValue().equalsIgnoreCase(name)) {
+                ignoredPlayers.remove(e.getKey());
+                save();
+                return e.getValue();
+            }
+        }
+        return null;
     }
 }

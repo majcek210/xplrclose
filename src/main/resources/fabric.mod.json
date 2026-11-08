@@ -5,11 +5,12 @@
 	"name": "xplrclose",
 	"description": "This client side mod alert you when player/s are nearby.",
 	"authors": [
-		"Me!"
+		"majcek210"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/majcek210/xplrclose",
+		"sources": "https://github.com/majcek210/xplrclose",
+		"issues": "https://github.com/majcek210/xplrclose/issues"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/xplrclose/icon.png",

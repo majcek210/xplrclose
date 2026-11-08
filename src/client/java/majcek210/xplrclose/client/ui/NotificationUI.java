@@ -12,7 +12,7 @@ public class NotificationUI {
 
     public static Rectangle box(int index, int screenW, int screenH) {
         int x = screenW - WIDTH - MARGIN;
-        int y = screenH - MARGIN - (index + 1) * HEIGHT - index * GAP;
+        int y = screenH - MARGIN - 16 - (index + 1) * HEIGHT - index * GAP;
         return new Rectangle(x, y, WIDTH, HEIGHT);
     }
 

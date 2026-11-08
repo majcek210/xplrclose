@@ -2,6 +2,8 @@ package majcek210.xplrclose.client.notifications;
 
 import majcek210.xplrclose.Xplrclose;
 import majcek210.xplrclose.client.config.XplrcloseConfig;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 
 import java.util.*;
 
@@ -30,6 +32,7 @@ public class NotificationManager {
     }
 
     public static void tick() {
+        if (Minecraft.getInstance().gui.screen() instanceof ChatScreen) return;
         long maxAge = XplrcloseConfig.notificationDuration() * 1000L;
         long now = System.currentTimeMillis();
         active.removeIf(n -> now - n.createdAt > maxAge);
@@ -40,6 +43,7 @@ public class NotificationManager {
     }
     public static void reset() {
         active.clear();
+        nearby.clear();
     }
 
     public static void dismiss(Notification notifi) {
@@ -47,8 +51,8 @@ public class NotificationManager {
     }
 
     public static void ignoreAndDismiss(Notification notifi) {
-        XplrcloseConfig.ignorePlayer(notifi.playerUuid);
-        active.remove(notifi);
+        XplrcloseConfig.ignorePlayer(notifi.playerUuid, notifi.playerName);
+        active.removeIf(x -> x.playerUuid.equals(notifi.playerUuid));
     }
 
     public static boolean update(Map<UUID, String> nowNearby) {

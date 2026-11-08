@@ -10,6 +10,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public class XplrcloseHUD {
     private XplrcloseHUD() {}
@@ -39,7 +40,7 @@ public class XplrcloseHUD {
     }
 
     public static boolean handleOnClick(MouseButtonEvent event) {
-        if (event.button() != 0) return false;
+        if (event.button() != InputConstants.MOUSE_BUTTON_LEFT) return false;
 
         double mx = event.x();
         double my = event.y();

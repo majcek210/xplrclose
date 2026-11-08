@@ -3,6 +3,7 @@
 	"package": "majcek210.xplrclose.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"ChatScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
