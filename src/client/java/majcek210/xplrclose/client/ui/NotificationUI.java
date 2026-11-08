@@ -1,6 +1,4 @@
-package majcek210.xplrclose.client.notifications;
-
-import org.w3c.dom.css.Rect;
+package majcek210.xplrclose.client.ui;
 
 public class NotificationUI {
     public static final int WIDTH = 160, HEIGHT = 30, GAP = 4, MARGIN = 6;
